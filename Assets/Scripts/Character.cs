@@ -54,6 +54,20 @@ public abstract class Character : MonoBehaviour
         }
     }
 
+    public bool IsFalling 
+    {
+        get {
+            return !this.isOnGround && this.GetRB().velocity.y < 0;
+        }
+    }
+
+    public bool IsAscending 
+    {
+        get {
+            return !this.isOnGround && this.GetRB().velocity.y > 0;
+        }
+    }
+
     protected void Start() 
     {
         this.FaceDirectionChanged += OnFaceDirectionChanged;
@@ -61,7 +75,7 @@ public abstract class Character : MonoBehaviour
 
     protected bool IsRunPressed() 
     {
-        return Input.GetAxis("Run") > 0;
+        return Input.GetButton("Run");
     }
 
     protected float GetHorizontalAxis() 
@@ -82,7 +96,7 @@ public abstract class Character : MonoBehaviour
 
     protected bool IsJumpPressed() 
     {
-        return Input.GetAxis("Jump") > 0;
+        return Input.GetButton("Jump");
     }
 
     protected virtual void Jump(float force) 

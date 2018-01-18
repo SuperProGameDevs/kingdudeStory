@@ -14,6 +14,8 @@ public class Kingdude : Character
     [SerializeField] private float jumpHeight = 10;
     [SerializeField] private Transform groundChecker;
     [SerializeField] private LayerMask groundMask;
+    [SerializeField] private float jumpAmplificationRatio = 2;
+    [SerializeField] private float fallAmplificationRatio = 2.5f;
 
 	// Use this for initialization
 	protected new void Start() 
@@ -22,6 +24,7 @@ public class Kingdude : Character
         this.animator = this.GetComponent<Animator>();
         base.Start();
 	}
+
 
     protected override Rigidbody2D GetRB() 
     {
@@ -57,6 +60,14 @@ public class Kingdude : Character
             // All jump logic is inside Jump function
             // Checking if character is on ground is handled
             this.Jump(jumpHeight);
+        }
+
+        Rigidbody2D rb = this.GetRB();
+        // Multiplying by deltaTime is to apply gravity per second, not per FixedUpdate (roughly per frame)
+        if (this.IsFalling) {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallAmplificationRatio - 1) * Time.deltaTime;
+        } else if (this.IsAscending && !this.IsJumpPressed()) {
+            rb.velocity += Vector2.up * Physics2D.gravity.y * (jumpAmplificationRatio - 1) * Time.deltaTime;
         }
     }
 }
