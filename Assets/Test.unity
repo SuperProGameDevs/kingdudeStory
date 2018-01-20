@@ -2320,6 +2320,8 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 256
+  jumpAmplificationRatio: 2
+  fallAmplificationRatio: 2.5
 --- !u!95 &1069741351
 Animator:
   serializedVersion: 3
