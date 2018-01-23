@@ -17,26 +17,14 @@ public class Kingdude : Character
     [SerializeField] private float jumpAmplificationRatio = 2;
     [SerializeField] private float fallAmplificationRatio = 2.5f;
 
-	// Use this for initialization
-	protected new void Start() 
+    private bool isAttacking = false;
+
+    // Use this for initialization
+    protected new void Start()
     {
         this.dudeRB = this.GetComponent<Rigidbody2D>();
         this.animator = this.GetComponent<Animator>();
         base.Start();
-	}
-
-
-    protected override Rigidbody2D GetRB() 
-    {
-        return this.dudeRB;
-    }
-
-    protected override LayerMask GetGroundMask() {
-        return this.groundMask;
-    }
-
-    protected override Transform GetGroundChecker() {
-        return this.groundChecker;
     }
 	
 	// Update is called once per frame
@@ -46,6 +34,7 @@ public class Kingdude : Character
         this.animator.SetFloat("ySpeed", this.dudeRB.velocity.y);
         this.animator.SetBool("isRunning", this.isRunning);
         this.animator.SetBool("isOnGround", this.isOnGround);
+        Attack();
 	}
 
     // Same as Update, but called every fixed period of time
@@ -68,6 +57,28 @@ public class Kingdude : Character
             rb.velocity += Vector2.up * Physics2D.gravity.y * (fallAmplificationRatio - 1) * Time.deltaTime;
         } else if (this.IsAscending && !this.IsJumpPressed()) {
             rb.velocity += Vector2.up * Physics2D.gravity.y * (jumpAmplificationRatio - 1) * Time.deltaTime;
+        }
+    }
+
+    protected override Rigidbody2D GetRB()
+    {
+        return this.dudeRB;
+    }
+
+    protected override LayerMask GetGroundMask()
+    {
+        return this.groundMask;
+    }
+
+    protected override Transform GetGroundChecker()
+    {
+        return this.groundChecker;
+    }
+
+    protected void Attack()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse1)) {
+            this.animator.SetTrigger("attack");
         }
     }
 }
