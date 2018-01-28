@@ -22,7 +22,7 @@ public class FaceDirectionChangedEventArgs : EventArgs
     }
 }
 
-public abstract class Character : MonoBehaviour 
+public abstract class Character : MonoBehaviour
 {
     protected abstract Rigidbody2D GetRB();
     protected abstract Transform GetGroundChecker();
@@ -37,13 +37,12 @@ public abstract class Character : MonoBehaviour
     protected float groundCheckerRadius = 0.7f; // can override this in child Start
 
     public delegate void FaceDirectionChangedHandler(MonoBehaviour sender, FaceDirectionChangedEventArgs e);
+
     public event FaceDirectionChangedHandler FaceDirectionChanged;
 
-    public FaceDirection FaceDirection 
+    public FaceDirection FaceDirection
     {
-        get {
-            return this.faceDirection;
-        }
+        get { return this.faceDirection; }
         set {
             if (this.faceDirection != value) {
                 this.faceDirection = value;
@@ -54,36 +53,32 @@ public abstract class Character : MonoBehaviour
         }
     }
 
-    public bool IsFalling 
+    public bool IsFalling
     {
-        get {
-            return !this.isOnGround && this.GetRB().velocity.y < 0;
-        }
+        get { return !this.isOnGround && this.GetRB().velocity.y < 0; }
     }
 
-    public bool IsAscending 
+    public bool IsAscending
     {
-        get {
-            return !this.isOnGround && this.GetRB().velocity.y > 0;
-        }
+        get { return !this.isOnGround && this.GetRB().velocity.y > 0; }
     }
 
-    protected void Start() 
+    protected void Start()
     {
         this.FaceDirectionChanged += OnFaceDirectionChanged;
     }
 
-    protected bool IsRunPressed() 
+    protected bool IsRunPressed()
     {
         return Input.GetButton("Run");
     }
 
-    protected float GetHorizontalAxis() 
+    protected float GetHorizontalAxis()
     {
         return Input.GetAxis("Horizontal");
     }
 
-    protected virtual void Move(float speed) 
+    protected virtual void Move(float speed)
     {
         Rigidbody2D rb = this.GetRB();
         rb.velocity = new Vector2(speed, rb.velocity.y);
@@ -94,24 +89,25 @@ public abstract class Character : MonoBehaviour
         }
     }
 
-    protected bool IsJumpPressed() 
+    protected bool IsJumpPressed()
     {
         return Input.GetButton("Jump");
     }
 
-    protected virtual void Jump(float force) 
+    protected virtual void Jump(float force)
     {
         if (isOnGround) {
             isOnGround = false;
             this.GetRB().AddForce(new Vector2(0, force));
         } else {
-            isOnGround = Physics2D.OverlapCircle(this.GetGroundChecker().position, groundCheckerRadius, this.GetGroundMask());
+            isOnGround = Physics2D.OverlapCircle(this.GetGroundChecker().position, groundCheckerRadius,
+                this.GetGroundMask());
         }
     }
 
     // Changes facing direction of the character
     // Can be overriden for custom usage
-    protected virtual void OnFaceDirectionChanged(MonoBehaviour sender, FaceDirectionChangedEventArgs e) 
+    protected virtual void OnFaceDirectionChanged(MonoBehaviour sender, FaceDirectionChangedEventArgs e)
     {
         Vector3 localScale = sender.transform.localScale;
         if (e.FaceDirection == FaceDirection.Right) {

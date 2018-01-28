@@ -1378,10 +1378,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unityData: {fileID: 11400000, guid: c26cce4132fdc43e2a045852bd410ecb, type: 2}
   armatureName: armatureName
-  animationName: Attack_punch
+  animationName: Attack_punch_duplication1
   _sortingLayerName: Default
   _sortingOrder: 0
-  _playTimes: 69
+  _playTimes: 35
   _timeScale: 1
   _zSpace: 0
   isUGUI: 0
@@ -3283,7 +3283,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1903444008
 Transform:
   m_ObjectHideFlags: 0
@@ -3317,7 +3317,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 50f5100e088d4469895117743112501d, type: 2}
+  - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
