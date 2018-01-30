@@ -18,7 +18,7 @@ public class Kingdude : Character
     [SerializeField] float maxRunSpeed = 20;
 
     Rigidbody2D dudeRB;
-    CustomAnimator<KingdudeAnimation> animator;
+    Animator animator;
 
         // Jumping
     [SerializeField] float jumpHeight = 10;
@@ -34,29 +34,17 @@ public class Kingdude : Character
     protected new void Start()
     {
         this.dudeRB = this.GetComponent<Rigidbody2D>();
-
-        CustomAnimatorSettings<KingdudeAnimation> settings =
-            new CustomAnimatorSettings<KingdudeAnimation>(GetAnimations(), KingdudeAnimation.Idle, 100);
-        animator = new CustomAnimator<KingdudeAnimation>(this.GetComponent<UnityArmatureComponent>(), settings);
-        //this.animator = this.GetComponent<Animator>();
+        this.animator = this.GetComponent<Animator>();
         base.Start();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Mathf.Abs(GetRB().velocity.x) > 0.01) {
-            if (isRunning && animator.CurrentAnimation != KingdudeAnimation.Run) {
-                this.animator.Play(KingdudeAnimation.Run);
-            } else if (animator.CurrentAnimation != KingdudeAnimation.Walk) {
-                this.animator.Play(KingdudeAnimation.Walk);
-            }
-        }
-        //this.animator.SetFloat("xSpeed", Mathf.Abs(this.dudeRB.velocity.x));
-        //this.animator.SetFloat("ySpeed", this.dudeRB.velocity.y);
-        //this.animator.SetBool("isRunning", this.isRunning);
-        //this.animator.SetBool("isOnGround", this.isOnGround);
-        this.animator.Resolve();
+        this.animator.SetFloat("xSpeed", Mathf.Abs(GetRB().velocity.x));
+        this.animator.SetFloat("ySpeed", GetRB().velocity.y);
+        this.animator.SetBool("isRunning", this.isRunning);
+        this.animator.SetBool("isOnGround", this.isOnGround);
         HandleAttack();
     }
 
@@ -98,39 +86,25 @@ public class Kingdude : Character
             this.Jump(jumpHeight);
         }
 
-        Rigidbody2D rb = this.GetRB();
         // Multiplying by deltaTime is to apply gravity per second, not per FixedUpdate (roughly per frame)
         if (this.IsFalling) {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (fallAmplificationRatio - 1) * Time.deltaTime;
+            GetRB().velocity += Vector2.up * Physics2D.gravity.y * (fallAmplificationRatio - 1) * Time.deltaTime;
         } else if (this.IsAscending && !this.IsJumpPressed()) {
-            rb.velocity += Vector2.up * Physics2D.gravity.y * (jumpAmplificationRatio - 1) * Time.deltaTime;
+            GetRB().velocity += Vector2.up * Physics2D.gravity.y * (jumpAmplificationRatio - 1) * Time.deltaTime;
         }
     }
 
     protected void HandleAttack()
     {
-        //if (Input.GetKeyDown(KeyCode.J)) {
-        //    this.animator.SetTrigger("attack");
-        //    this.animator.SetInteger("attackType", (int) AttackType.Sword);
-        //} else if (Input.GetKeyDown(KeyCode.K)) {
-        //    this.animator.SetTrigger("attack");
-        //    this.animator.SetInteger("attackType", (int) AttackType.Punch);
-        //    if (sameAttackCount == 0) {
-        //        this.animator.SetTrigger("comboSwitch");
-        //    }
-        //}
-    }
-
-    protected Dictionary<KingdudeAnimation, CustomAnimation> GetAnimations()
-    {
-        CustomAnimation Idle = new CustomAnimation("Idle", 0);
-        CustomAnimation Walk = new CustomAnimation("Walking", 10, 1);
-        CustomAnimation Run = new CustomAnimation("Running", 10);
-
-        return new Dictionary<KingdudeAnimation, CustomAnimation> {
-            { KingdudeAnimation.Idle, Idle },
-            { KingdudeAnimation.Walk, Walk },
-            { KingdudeAnimation.Run, Run }
-        };
+        if (Input.GetKeyDown(KeyCode.J)) {
+            this.animator.SetInteger("attackType", (int)AttackType.Sword);
+            this.animator.SetTrigger("attack");
+        } else if (Input.GetKeyDown(KeyCode.K)) {
+            this.animator.SetInteger("attackType", (int)AttackType.Punch);
+            this.animator.SetTrigger("attack");
+            if (sameAttackCount == 0) {
+                this.animator.SetTrigger("comboSwitch");
+            }
+        }
     }
 }
