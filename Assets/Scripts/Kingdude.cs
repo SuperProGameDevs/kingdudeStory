@@ -31,25 +31,16 @@ public class Kingdude : Character
     [SerializeField] float jumpAmplificationRatio = 2;
     [SerializeField] float fallAmplificationRatio = 2.5f;
 
-    bool isAttacking = false;
-    int sequencialClickCount = 0;
-    const int maxSequencialClickCount = 1000;
-    float timePassed = 0;
-    const float deadLine = 1;
-    float time1;
-    float time2;
-
-    Dictionary<PunchType, string> punchAnims;
+    bool isAttacking;
     IAttackSeries<PunchType> punchCombo;
+    SequentialClickTimer punchTimer;
 
     // Use this for initialization
     protected new void Start()
     {
-        punchAnims = new Dictionary<PunchType, string> {
-            {PunchType.Punch1, "Attack_punch"},
-            {PunchType.Punch2, "Attack_punch_duplication1"}
-        };
+        isAttacking = false;
         punchCombo = new ComboAttackSeries<PunchType>(new[] { PunchType.Punch1, PunchType.Punch1, PunchType.Punch2 });
+        punchTimer = new SequentialClickTimer(1);
 
         this.dudeRB = this.GetComponent<Rigidbody2D>();
         this.animator = this.GetComponent<Animator>();
@@ -91,7 +82,8 @@ public class Kingdude : Character
     protected void HandleMovement()
     {
         isRunning = this.IsRunPressed();
-        float xSpeed = this.GetHorizontalAxis() * ((isRunning) ? maxRunSpeed : maxWalkSpeed);
+        float attackSlowDown = (isAttacking) ? 0.2f : 1;
+        float xSpeed = this.GetHorizontalAxis() * ((isRunning) ? maxRunSpeed : maxWalkSpeed) * attackSlowDown;
 
         this.Move(xSpeed);
     }
@@ -114,12 +106,13 @@ public class Kingdude : Character
 
     protected void HandleAttack()
     {
-        timePassed += Time.deltaTime;
-        if (sequencialClickCount >= maxSequencialClickCount || timePassed >= deadLine) {
-            sequencialClickCount = 0;
-            timePassed = 0;
+        isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("attack");
+
+        punchTimer.Update(Time.deltaTime);
+        if (punchTimer.IsExpired()) {
+            punchTimer.Reset();
         }
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsTag("attack")) {
+        if (!isAttacking) {
             if (Input.GetKeyDown(KeyCode.J)) {
                 this.animator.SetInteger("attackType", (int)AttackType.Sword);
                 this.animator.SetTrigger("attack");
@@ -127,12 +120,11 @@ public class Kingdude : Character
                 this.animator.SetInteger("attackType", (int)AttackType.Punch);
                 this.animator.SetTrigger("attack");
 
-                if (sequencialClickCount == 0) {
+                if (!punchTimer.IsClickSequential) {
                     punchCombo.Reset();
                 }
                 this.animator.SetInteger("punchType", (int)punchCombo.Next());
-                sequencialClickCount++;
-                timePassed = 0;
+                punchTimer.RegisterSequencialClick();
             }
         }
     }
