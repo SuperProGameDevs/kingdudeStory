@@ -9,7 +9,8 @@ public class Kingdude : Character
     enum AttackType
     {
         Sword = 1,
-        Punch = 2
+        Punch = 2,
+        SwordDash = 3
     }
 
     enum PunchType
@@ -18,13 +19,19 @@ public class Kingdude : Character
         Punch2 = 2
     }
 
+    enum SwordType
+    {
+        Sword1 = 1,
+        Sword2 = 2
+    }
+
     [SerializeField] float maxWalkSpeed = 10;
     [SerializeField] float maxRunSpeed = 20;
 
     Rigidbody2D dudeRB;
     Animator animator;
 
-        // Jumping
+    // Jumping
     [SerializeField] float jumpHeight = 10;
     [SerializeField] Transform groundChecker;
     [SerializeField] LayerMask groundMask;
@@ -32,8 +39,15 @@ public class Kingdude : Character
     [SerializeField] float fallAmplificationRatio = 2.5f;
 
     bool isAttacking;
+    AttackType currentAttack;
+    // Punching
     IAttackSeries<PunchType> punchCombo;
     SequentialClickTimer punchTimer;
+    // Sword
+    IAttackSeries<SwordType> swordCombo;
+    SequentialClickTimer swordTimer;
+    // SwordDash
+    [SerializeField] float dashSpeed = 15;
 
     // Use this for initialization
     protected new void Start()
@@ -41,6 +55,9 @@ public class Kingdude : Character
         isAttacking = false;
         punchCombo = new ComboAttackSeries<PunchType>(new[] { PunchType.Punch1, PunchType.Punch1, PunchType.Punch2 });
         punchTimer = new SequentialClickTimer(1);
+
+        swordCombo = new RandomAttackSeries<SwordType>(new[] { SwordType.Sword1, SwordType.Sword2 });
+        swordTimer = new SequentialClickTimer(1);
 
         this.dudeRB = this.GetComponent<Rigidbody2D>();
         this.animator = this.GetComponent<Animator>();
@@ -62,6 +79,14 @@ public class Kingdude : Character
     {
         HandleMovement();
         HandleJumping();
+
+        if (isAttacking && currentAttack == AttackType.SwordDash) {
+            if (this.FaceDirection == FaceDirection.Right) {
+                this.Move(dashSpeed);
+            } else if (this.FaceDirection == FaceDirection.Left) {
+                this.Move(-dashSpeed);
+            }
+        }
     }
 
     protected override Rigidbody2D GetRB()
@@ -112,11 +137,23 @@ public class Kingdude : Character
         if (punchTimer.IsExpired()) {
             punchTimer.Reset();
         }
+
+        swordTimer.Update(Time.deltaTime);
+        if (swordTimer.IsExpired()) {
+            swordTimer.Reset();
+        }
         if (!isAttacking) {
             if (Input.GetKeyDown(KeyCode.J)) {
-                this.animator.SetInteger("attackType", (int)AttackType.Sword);
+                currentAttack = AttackType.Sword;
+                this.animator.SetInteger("attackType", (int)currentAttack);
                 this.animator.SetTrigger("attack");
+
+                if (!swordTimer.IsClickSequential) {
+                    swordCombo.Reset();
+                }
+                this.animator.SetInteger("swordType", (int)swordCombo.Next());
             } else if (Input.GetKeyDown(KeyCode.K)) {
+                currentAttack = AttackType.Punch;
                 this.animator.SetInteger("attackType", (int)AttackType.Punch);
                 this.animator.SetTrigger("attack");
 
@@ -125,6 +162,10 @@ public class Kingdude : Character
                 }
                 this.animator.SetInteger("punchType", (int)punchCombo.Next());
                 punchTimer.RegisterSequencialClick();
+            } else if (Input.GetKeyDown(KeyCode.L)) {
+                currentAttack = AttackType.SwordDash;
+                this.animator.SetInteger("attackType", (int)currentAttack);
+                this.animator.SetTrigger("attack");
             }
         }
     }

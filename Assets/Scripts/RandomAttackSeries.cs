@@ -12,7 +12,7 @@ public class RandomAttackSeries<T> : IAttackSeries<T> where T : struct, IConvert
 
     public T Next()
     {
-        return types[UE.Random.Range(0, types.Length - 1)];
+        return types[UE.Random.Range(0, types.Length)];
     }
 
     public void Reset()
