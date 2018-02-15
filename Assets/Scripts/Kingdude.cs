@@ -4,7 +4,7 @@ using DragonBones;
 using UnityEngine;
 using Transform = UnityEngine.Transform;
 
-public class Kingdude : Character
+public class Kingdude : Character, IAttacking
 {
     enum AttackType
     {
@@ -47,7 +47,7 @@ public class Kingdude : Character
     IAttackSeries<SwordType> swordCombo;
     SequentialClickTimer swordTimer;
     // SwordDash
-    [SerializeField] float dashSpeed = 15;
+    [SerializeField] float dashSpeed = 30;
 
     // Use this for initialization
     protected new void Start()
@@ -168,5 +168,10 @@ public class Kingdude : Character
                 this.animator.SetTrigger("attack");
             }
         }
+    }
+
+    public bool IsAttacking()
+    {
+        return this.isAttacking;
     }
 }
