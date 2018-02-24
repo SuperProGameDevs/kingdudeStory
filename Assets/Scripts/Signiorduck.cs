@@ -41,10 +41,11 @@ public class Signiorduck : Character, IDamageable {
 
     public void OnTakeDamage(float damage)
     {
-        currentHealth -= damage;
+        Debug.Log("Got hit!");
+        //currentHealth -= damage;
 
-        if (currentHealth <= 0) {
-            Destroy(gameObject);
-        }
+        //if (currentHealth <= 0) {
+        //    Destroy(gameObject);
+        //}
     }
 }

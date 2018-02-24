@@ -3,28 +3,10 @@ using System.Collections.Generic;
 using DragonBones;
 using UnityEngine;
 using Transform = UnityEngine.Transform;
+using Aliases;
 
 public class Kingdude : Character, IAttacking
 {
-    enum AttackType
-    {
-        Sword = 1,
-        Punch = 2,
-        SwordDash = 3
-    }
-
-    enum PunchType
-    {
-        Punch1 = 1,
-        Punch2 = 2
-    }
-
-    enum SwordType
-    {
-        Sword1 = 1,
-        Sword2 = 2
-    }
-
     [SerializeField] float maxWalkSpeed = 10;
     [SerializeField] float maxRunSpeed = 20;
 
@@ -39,12 +21,14 @@ public class Kingdude : Character, IAttacking
     [SerializeField] float fallAmplificationRatio = 2.5f;
 
     bool isAttacking;
-    AttackType currentAttack;
+    Attack currentAttack;
+    AttackGroup currentAttackGroup;
+
     // Punching
-    IAttackSeries<PunchType> punchCombo;
+    IAttackSeries<Attack> punchCombo;
     SequentialClickTimer punchTimer;
     // Sword
-    IAttackSeries<SwordType> swordCombo;
+    IAttackSeries<Attack> swordCombo;
     SequentialClickTimer swordTimer;
     // SwordDash
     [SerializeField] float dashSpeed = 30;
@@ -53,10 +37,11 @@ public class Kingdude : Character, IAttacking
     protected new void Start()
     {
         isAttacking = false;
-        punchCombo = new ComboAttackSeries<PunchType>(new[] { PunchType.Punch1, PunchType.Punch1, PunchType.Punch2 });
+
+        punchCombo = new ComboAttackSeries<Attack>(new[] { Attack.KingdudePunch1, Attack.KingdudePunch1, Attack.KingdudePunch2 });
         punchTimer = new SequentialClickTimer(1);
 
-        swordCombo = new RandomAttackSeries<SwordType>(new[] { SwordType.Sword1, SwordType.Sword2 });
+        swordCombo = new RandomAttackSeries<Attack>(new[] { Attack.KingdudeSword1, Attack.KingdudeSword2 });
         swordTimer = new SequentialClickTimer(1);
 
         this.dudeRB = this.GetComponent<Rigidbody2D>();
@@ -77,15 +62,18 @@ public class Kingdude : Character, IAttacking
     // Same as Update, but called every fixed period of time
     void FixedUpdate()
     {
-        HandleMovement();
-        HandleJumping();
 
-        if (isAttacking && currentAttack == AttackType.SwordDash) {
+        // Dash is an attack with movement, so move kingdude fast in facing direction
+        if (isAttacking && currentAttack == Attack.KingdudeSwordDash) {
             if (this.FaceDirection == FaceDirection.Right) {
                 this.Move(dashSpeed);
             } else if (this.FaceDirection == FaceDirection.Left) {
                 this.Move(-dashSpeed);
             }
+        } else {
+            // Disable all movement and jumping during dash
+            HandleMovement();
+            HandleJumping();
         }
     }
 
@@ -104,6 +92,7 @@ public class Kingdude : Character, IAttacking
         return this.groundChecker;
     }
 
+    // All movement logic is handled here (running, walking and movements during attacks)
     protected void HandleMovement()
     {
         isRunning = this.IsRunPressed();
@@ -113,6 +102,7 @@ public class Kingdude : Character, IAttacking
         this.Move(xSpeed);
     }
 
+    // All jumping logic is handled here
     protected void HandleJumping()
     {
         if (this.IsJumpPressed() || !isOnGround) {
@@ -129,49 +119,60 @@ public class Kingdude : Character, IAttacking
         }
     }
 
+    // All attacking logic is handled here
     protected void HandleAttack()
     {
         isAttacking = animator.GetCurrentAnimatorStateInfo(0).IsTag("attack");
 
+        // Punching timer to reset attack combination
         punchTimer.Update(Time.deltaTime);
         if (punchTimer.IsExpired()) {
             punchTimer.Reset();
         }
 
-        swordTimer.Update(Time.deltaTime);
-        if (swordTimer.IsExpired()) {
-            swordTimer.Reset();
-        }
+        // Start next attack only when previous attack is finished
         if (!isAttacking) {
+            currentAttack = Attack.None;
+            currentAttackGroup = AttackGroup.None;
+
             if (Input.GetKeyDown(KeyCode.J)) {
-                currentAttack = AttackType.Sword;
-                this.animator.SetInteger("attackType", (int)currentAttack);
-                this.animator.SetTrigger("attack");
-
-                if (!swordTimer.IsClickSequential) {
-                    swordCombo.Reset();
-                }
-                this.animator.SetInteger("swordType", (int)swordCombo.Next());
+                // Sword attaks
+                currentAttackGroup = AttackGroup.KingdudeSword;
+                currentAttack = swordCombo.Next();
             } else if (Input.GetKeyDown(KeyCode.K)) {
-                currentAttack = AttackType.Punch;
-                this.animator.SetInteger("attackType", (int)AttackType.Punch);
-                this.animator.SetTrigger("attack");
-
+                // Punch attacks
+                currentAttackGroup = AttackGroup.KingdudePunch;
                 if (!punchTimer.IsClickSequential) {
                     punchCombo.Reset();
                 }
-                this.animator.SetInteger("punchType", (int)punchCombo.Next());
+                currentAttack = punchCombo.Next();
                 punchTimer.RegisterSequencialClick();
             } else if (Input.GetKeyDown(KeyCode.L)) {
-                currentAttack = AttackType.SwordDash;
-                this.animator.SetInteger("attackType", (int)currentAttack);
+                // Sword dash
+                currentAttackGroup = AttackGroup.KingdudeDash;
+                currentAttack = Attack.KingdudeSwordDash;
+            }
+
+            if (currentAttack != Attack.None) {
+                this.animator.SetInteger("attackGroup", (int)currentAttackGroup);
                 this.animator.SetTrigger("attack");
+                this.animator.SetInteger("attackType", (int)currentAttack);
             }
         }
     }
 
-    public bool IsAttacking()
+    public bool IsAttacking
     {
-        return this.isAttacking;
+        get { return isAttacking; }
+    }
+
+    public Attack CurrentAttack 
+    {
+        get { return currentAttack; }
+    }
+
+    public AttackGroup CurrentAttackGroup
+    {
+        get { return currentAttackGroup; }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using Aliases;
 
 public interface IAttacking
 {
-    bool IsAttacking();
+    bool IsAttacking { get; }
+    Attack CurrentAttack { get; }
+    AttackGroup CurrentAttackGroup { get; }
 }

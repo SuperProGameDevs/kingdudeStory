@@ -6,7 +6,7 @@ using DragonBones;
 
 public class SimpleBehaviour : StateMachineBehaviour
 {
-    [SerializeField] string animationName;
+    [SerializeField] Aliases.Animation animation;
     [SerializeField] int playTimes = 0;
     [SerializeField] float speed = 1;
     [SerializeField] string exitTrigger = null;
@@ -16,7 +16,7 @@ public class SimpleBehaviour : StateMachineBehaviour
     {
         var uac = animator.GetComponent<UnityArmatureComponent>();
         uac.animation.timeScale = speed;
-        uac.animation.FadeIn(animationName, 0, playTimes);
+        uac.animation.FadeIn(Aliases.DragonbonesAnimationNameConverter.Forward(animation), 0, playTimes);
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks

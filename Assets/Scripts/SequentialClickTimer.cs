@@ -22,7 +22,7 @@ public class SequentialClickTimer
 
     public void Update(float deltaTime)
     {
-        this.timePassed = deltaTime;
+        this.timePassed += deltaTime;
     }
 
     public void Reset()
