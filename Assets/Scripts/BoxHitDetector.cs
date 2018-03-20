@@ -36,13 +36,12 @@ public class BoxHitDetector : MonoBehaviour
 
 
             foreach (BoxCollider2D hitbox in hitboxes) {
-                GameObject debugCube = GameObject.Find("Cube");
-                debugCube.transform.position = new Vector3(hitbox.bounds.center.x, hitbox.bounds.center.y, debugCube.transform.position.z);
-                debugCube.transform.localScale = new Vector3(hitbox.bounds.size.x, hitbox.bounds.size.y, 0);
+                //GameObject debugCube = GameObject.Find("Cube");
+                //debugCube.transform.position = new Vector3(hitbox.bounds.center.x, hitbox.bounds.center.y, debugCube.transform.position.z);
+                //debugCube.transform.localScale = new Vector3(hitbox.bounds.size.x, hitbox.bounds.size.y, 0);
                 hurtboxes.AddRange(Physics2D.OverlapBoxAll(hitbox.bounds.center, hitbox.bounds.size, hitbox.transform.rotation.z, hurtLayer));
             }
 
-            Debug.Log(hurtboxes.Count);
             foreach (Collider2D hurtbox in hurtboxes) {
                 if (!enemies.Contains(hurtbox.gameObject)) {
                     enemies.Add(hurtbox.gameObject);

@@ -5,12 +5,13 @@ using UnityEngine;
 using Transform = UnityEngine.Transform;
 using Aliases;
 
-public class Kingdude : Character, IAttacking
+[RequireComponent(typeof(Character))]
+public class KingdudeController : MonoBehaviour, IAttacking
 {
     [SerializeField] float maxWalkSpeed = 10;
     [SerializeField] float maxRunSpeed = 20;
 
-    Rigidbody2D dudeRB;
+    Character character;
     Animator animator;
 
     // Jumping
@@ -33,9 +34,8 @@ public class Kingdude : Character, IAttacking
     // SwordDash
     [SerializeField] float dashSpeed = 30;
 
-    // Use this for initialization
-    protected new void Start()
-    {
+	private void Awake()
+	{
         isAttacking = false;
 
         punchCombo = new ComboAttackSeries<Attack>(new[] { Attack.KingdudePunch1, Attack.KingdudePunch1, Attack.KingdudePunch2 });
@@ -44,9 +44,14 @@ public class Kingdude : Character, IAttacking
         swordCombo = new RandomAttackSeries<Attack>(new[] { Attack.KingdudeSword1, Attack.KingdudeSword2 });
         swordTimer = new SequentialClickTimer(1);
 
-        this.dudeRB = this.GetComponent<Rigidbody2D>();
-        this.animator = this.GetComponent<Animator>();
-        base.Start();
+        character = GetComponent<Character>();
+        animator = GetComponent<Animator>();
+	}
+
+	// Use this for initialization
+	protected new void Start()
+    {
+
     }
 
     // Update is called once per frame
@@ -55,41 +60,25 @@ public class Kingdude : Character, IAttacking
         this.animator.SetFloat("xSpeed", Mathf.Abs(GetRB().velocity.x));
         this.animator.SetFloat("ySpeed", GetRB().velocity.y);
         this.animator.SetBool("isRunning", this.isRunning);
-        this.animator.SetBool("isOnGround", this.isOnGround);
+        this.animator.SetBool("isOnGround", character.IsOnGround);
         HandleAttack();
     }
 
     // Same as Update, but called every fixed period of time
     void FixedUpdate()
     {
-
         // Dash is an attack with movement, so move kingdude fast in facing direction
         if (isAttacking && currentAttack == Attack.KingdudeSwordDash) {
-            if (this.FaceDirection == FaceDirection.Right) {
-                this.Move(dashSpeed);
+            if (character.FaceDirection == FaceDirection.Right) {
+                character.Move(dashSpeed);
             } else if (this.FaceDirection == FaceDirection.Left) {
-                this.Move(-dashSpeed);
+                character.Move(-dashSpeed);
             }
         } else {
             // Disable all movement and jumping during dash
             HandleMovement();
             HandleJumping();
         }
-    }
-
-    protected override Rigidbody2D GetRB()
-    {
-        return this.dudeRB;
-    }
-
-    protected override LayerMask GetGroundMask()
-    {
-        return this.groundMask;
-    }
-
-    protected override Transform GetGroundChecker()
-    {
-        return this.groundChecker;
     }
 
     // All movement logic is handled here (running, walking and movements during attacks)
@@ -105,10 +94,10 @@ public class Kingdude : Character, IAttacking
     // All jumping logic is handled here
     protected void HandleJumping()
     {
-        if (this.IsJumpPressed() || !isOnGround) {
+        if (this.IsJumpPressed() || !character.IsOnGround) {
             // All jump logic is inside Jump function
             // Checking if character is on ground is handled
-            this.Jump(jumpHeight);
+            character.Jump(jumpHeight);
         }
 
         // Multiplying by deltaTime is to apply gravity per second, not per FixedUpdate (roughly per frame)
@@ -166,7 +155,7 @@ public class Kingdude : Character, IAttacking
         get { return isAttacking; }
     }
 
-    public Attack CurrentAttack 
+    public Attack CurrentAttack
     {
         get { return currentAttack; }
     }
@@ -174,5 +163,20 @@ public class Kingdude : Character, IAttacking
     public AttackGroup CurrentAttackGroup
     {
         get { return currentAttackGroup; }
+    }
+
+    private bool IsRunPressed()
+    {
+        return Input.GetButton("Run");
+    }
+
+    private float GetHorizontalAxis()
+    {
+        return Input.GetAxis("Horizontal");
+    }
+
+    private bool IsJumpPressed()
+    {
+        return Input.GetButton("Jump");
     }
 }
