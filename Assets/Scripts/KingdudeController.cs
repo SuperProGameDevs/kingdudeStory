@@ -16,8 +16,6 @@ public class KingdudeController : MonoBehaviour, IAttacking
 
     // Jumping
     [SerializeField] float jumpHeight = 10;
-    [SerializeField] Transform groundChecker;
-    [SerializeField] LayerMask groundMask;
     [SerializeField] float jumpAmplificationRatio = 2;
     [SerializeField] float fallAmplificationRatio = 2.5f;
 
@@ -57,9 +55,9 @@ public class KingdudeController : MonoBehaviour, IAttacking
     // Update is called once per frame
     void Update()
     {
-        this.animator.SetFloat("xSpeed", Mathf.Abs(GetRB().velocity.x));
-        this.animator.SetFloat("ySpeed", GetRB().velocity.y);
-        this.animator.SetBool("isRunning", this.isRunning);
+        this.animator.SetFloat("xSpeed", Mathf.Abs(character.Velocity.x));
+        this.animator.SetFloat("ySpeed", character.Velocity.y);
+        this.animator.SetBool("isRunning", this.IsRunPressed());
         this.animator.SetBool("isOnGround", character.IsOnGround);
         HandleAttack();
     }
@@ -71,7 +69,7 @@ public class KingdudeController : MonoBehaviour, IAttacking
         if (isAttacking && currentAttack == Attack.KingdudeSwordDash) {
             if (character.FaceDirection == FaceDirection.Right) {
                 character.Move(dashSpeed);
-            } else if (this.FaceDirection == FaceDirection.Left) {
+            } else if (character.FaceDirection == FaceDirection.Left) {
                 character.Move(-dashSpeed);
             }
         } else {
@@ -84,11 +82,10 @@ public class KingdudeController : MonoBehaviour, IAttacking
     // All movement logic is handled here (running, walking and movements during attacks)
     protected void HandleMovement()
     {
-        isRunning = this.IsRunPressed();
         float attackSlowDown = (isAttacking) ? 0.2f : 1;
-        float xSpeed = this.GetHorizontalAxis() * ((isRunning) ? maxRunSpeed : maxWalkSpeed) * attackSlowDown;
+        float xSpeed = this.GetHorizontalAxis() * ((this.IsRunPressed()) ? maxRunSpeed : maxWalkSpeed) * attackSlowDown;
 
-        this.Move(xSpeed);
+        character.Move(xSpeed);
     }
 
     // All jumping logic is handled here
@@ -101,10 +98,10 @@ public class KingdudeController : MonoBehaviour, IAttacking
         }
 
         // Multiplying by deltaTime is to apply gravity per second, not per FixedUpdate (roughly per frame)
-        if (this.IsFalling) {
-            GetRB().velocity += Vector2.up * Physics2D.gravity.y * (fallAmplificationRatio - 1) * Time.fixedDeltaTime;
-        } else if (this.IsAscending && !this.IsJumpPressed()) {
-            GetRB().velocity += Vector2.up * Physics2D.gravity.y * (jumpAmplificationRatio - 1) * Time.fixedDeltaTime;
+        if (character.IsFalling) {
+            character.Velocity += Vector2.up * Physics2D.gravity.y * (fallAmplificationRatio - 1) * Time.fixedDeltaTime;
+        } else if (character.IsAscending && !this.IsJumpPressed()) {
+            character.Velocity += Vector2.up * Physics2D.gravity.y * (jumpAmplificationRatio - 1) * Time.fixedDeltaTime;
         }
     }
 

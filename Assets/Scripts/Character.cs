@@ -1,31 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public enum FaceDirection { Right, Left }
-
-public class FaceDirectionChangedEventArgs : EventArgs 
-{
-    protected FaceDirection direction;
-
-    public FaceDirectionChangedEventArgs(FaceDirection direction) 
-    {
-        this.direction = direction;
-    }
-
-    public FaceDirection FaceDirection 
-    {
-        get {
-            return direction;
-        }
-    }
-}
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class Character : MonoBehaviour
 {
-    [SerializeField] Rigidbody2D rb;
+    Rigidbody2D rb;
 
     // Horizontal movement
     FaceDirection faceDirection;
@@ -33,7 +13,7 @@ public class Character : MonoBehaviour
 
     // Jumping
     bool isOnGround = false; // let game decide if char is on ground
-    float groundCheckerRadius = 0.7f; // can override this in child Start
+    [SerializeField] float groundCheckerRadius = 0.7f; // can override this in child Start
     [SerializeField] Transform groundChecker;
     [SerializeField] LayerMask groundMask;
 
@@ -67,6 +47,12 @@ public class Character : MonoBehaviour
     public bool IsOnGround
     {
         get { return isOnGround; }
+    }
+
+    public Vector2 Velocity
+    {
+        get { return rb.velocity; }
+        set { rb.velocity = value; }
     }
 
     // Called before Start
